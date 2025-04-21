@@ -7,8 +7,9 @@ terraform {
 }
 
 resource "azurerm_resource_group" "this" {
-  name     = var.name
+  name     = var.rg_name
   location = var.location
+  tags     = var.rg_tags
 }
 
 resource "azurerm_key_vault" "this" {
@@ -20,4 +21,5 @@ resource "azurerm_key_vault" "this" {
   tenant_id                  = var.tenant_id
   enable_rbac_authorization  = lookup(each.value, "enable_rbac_authorization", var.enable_rbac_authorization)
   soft_delete_retention_days = lookup(each.value, "soft_delete_retention_days", var.soft_delete_retention_days)
+  tags                       = lookup(each.value, "tags", {})
 }

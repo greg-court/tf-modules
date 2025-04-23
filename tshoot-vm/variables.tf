@@ -59,7 +59,7 @@ variable "admin_password" {
   description = "The administrator password for the VM"
   type        = string
   sensitive   = true
-  default     = "P@$$w0rd123!"
+  default     = "Password123!"
 }
 
 variable "zone" {

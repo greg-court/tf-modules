@@ -54,7 +54,7 @@ locals {
 
   default_windows_publisher = "MicrosoftWindowsServer"
   default_windows_offer     = "WindowsServer"
-  default_windows_sku       = "2022-Datacenter"
+  default_windows_sku       = "2022-datacenter-g2"
 
   source_image_publisher = var.source_image_publisher != null ? var.source_image_publisher : (local.is_linux ? local.default_linux_publisher : local.default_windows_publisher)
   source_image_offer     = var.source_image_offer != null ? var.source_image_offer : (local.is_linux ? local.default_linux_offer : local.default_windows_offer)

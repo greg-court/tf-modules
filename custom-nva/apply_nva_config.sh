@@ -212,7 +212,6 @@ if [ "${enable_bind_server}" == "true" ]; then
     # Write main config files
     if [ -n "${bind_named_conf_options_content}" ]; then
         echo "NVA_CONFIG_SCRIPT: Writing /etc/bind/named.conf.options"
-        # Ensure /etc/bind exists (it should be created by package install)
         mkdir -p /etc/bind
         echo "${bind_named_conf_options_content}" > /etc/bind/named.conf.options
     else

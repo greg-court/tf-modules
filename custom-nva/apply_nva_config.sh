@@ -227,16 +227,13 @@ if [ "${enable_bind_server}" == "true" ]; then
     fi
 
     # Write the primary zone file using the path variable
-    if [ -n "${bind_primary_zone_file_content}" ] && [ -n "${bind_primary_zone_file_path}" ]; then
+    echo "NVA_CONFIG_SCRIPT: Proceeding to prepare primary BIND zone file." # Added for clarity
+    # Directly use the variables, assuming they are valid if enable_bind_server is true
     PRIMARY_ZONE_DIR=$(dirname "${bind_primary_zone_file_path}")
-    mkdir -p "${PRIMARY_ZONE_DIR}"
-
-    cat <<'ZONEFILE' > "${bind_primary_zone_file_path}"
-${bind_primary_zone_file_content}
-ZONEFILE
-    else
-        echo "NVA_CONFIG_SCRIPT: WARNING - Primary zone file content or path is empty."
-    fi
+    echo "NVA_CONFIG_SCRIPT: Creating BIND zone directory $${PRIMARY_ZONE_DIR} if it doesn't exist."
+    mkdir -p "$${PRIMARY_ZONE_DIR}"
+    echo "NVA_CONFIG_SCRIPT: Writing primary zone file to ${bind_primary_zone_file_path}"
+    printf '%s' "${bind_primary_zone_file_content}" > "${bind_primary_zone_file_path}" # This uses the robust printf
 
     echo "NVA_CONFIG_SCRIPT: Setting BIND file/directory permissions..."
     chown -R root:bind /etc/bind

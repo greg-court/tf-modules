@@ -44,7 +44,7 @@ set -euo pipefail
 echo "NVA_FIREWALL_SCRIPT: Starting firewall configuration..."
 
 # ---------------------------------------------------------------------------
-# Variable assignment (all injected by Terraform’s templatefile).
+# Variable assignment (all injected by Terraform's templatefile).
 # ---------------------------------------------------------------------------
 UNTRUST_IFACE="${untrust_iface_name}"
 TRUST_IFACE="${trust_iface_name}"

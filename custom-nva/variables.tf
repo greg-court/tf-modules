@@ -85,13 +85,13 @@ variable "wg_peer_allowed_ips_cidr" {
   type        = string
 }
 
-variable "primary_interface_name" {
+variable "untrust_interface_name" {
   description = "Name of the primary (untrust) network interface in the OS."
   type        = string
   default     = "eth0"
 }
 
-variable "secondary_interface_name" {
+variable "trust_interface_name" {
   description = "Name of the secondary (trust) network interface in the OS."
   type        = string
   default     = "eth1"

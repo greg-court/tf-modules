@@ -86,8 +86,8 @@ locals {
     wg_peer_allowed_ips_cidr     = var.wg_peer_allowed_ips_cidr
     wg_peer_combined_allowed_ips = local.wg_peer_combined_allowed_ips_string
 
-    untrust_iface_name      = var.primary_interface_name
-    trust_iface_name        = var.secondary_interface_name
+    untrust_iface_name      = var.untrust_interface_name
+    trust_iface_name        = var.trust_interface_name
     trust_subnet_cidr       = data.azurerm_subnet.trust_subnet_details.address_prefixes[0]
     trust_subnet_gateway_ip = local.trust_subnet_gateway_ip
     wg_actual_subnet_cidr   = local.wg_subnet_cidr

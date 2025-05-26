@@ -4,6 +4,10 @@ terraform {
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
+      http = {
+        source  = "hashicorp/http"
+        version = "~> 3.4"
+      }
     }
   }
 }
@@ -159,7 +163,7 @@ resource "null_resource" "provision_bind_options" {
       agent       = false
     }
   }
-  depends_on = [azurerm_linux_virtual_machine.nva] # Explicit dependency
+  depends_on = [null_resource.manage_devops_ssh_rule]
 }
 
 resource "null_resource" "provision_bind_local" {
@@ -181,7 +185,7 @@ resource "null_resource" "provision_bind_local" {
       agent       = false
     }
   }
-  depends_on = [azurerm_linux_virtual_machine.nva]
+  depends_on = [null_resource.manage_devops_ssh_rule]
 }
 
 resource "null_resource" "provision_bind_primary_zone" {
@@ -204,7 +208,7 @@ resource "null_resource" "provision_bind_primary_zone" {
       agent       = false
     }
   }
-  depends_on = [azurerm_linux_virtual_machine.nva]
+  depends_on = [null_resource.manage_devops_ssh_rule]
 }
 
 resource "terraform_data" "nva_config_trigger" {

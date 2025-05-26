@@ -148,3 +148,8 @@ variable "bind_primary_zone_file_path" {
   type        = string
   default     = "/etc/bind/db.primary" # A generic default
 }
+
+variable "untrust_nsg_id" {
+  description = "ID of the Network Security Group (NSG) associated with the untrust interface."
+  type        = string
+}

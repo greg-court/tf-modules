@@ -97,7 +97,7 @@ locals {
 
     on_prem_source_ip = var.on_prem_source_ip # used to allow ssh access from on prem ip only
 
-    enable_bind_server              = var.enable_bind_server
+    enable_bind_server              = lower(tostring(var.enable_bind_server))
     bind_named_conf_options_content = var.bind_named_conf_options_content
     bind_named_conf_local_content   = var.bind_named_conf_local_content
     bind_primary_zone_file_content  = var.bind_primary_zone_file_content

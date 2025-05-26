@@ -226,14 +226,13 @@ if [ "${enable_bind_server}" == "true" ]; then
         echo "NVA_CONFIG_SCRIPT: WARNING - bind_named_conf_local_content is empty."
     fi
 
-    # Write the primary zone file using the path variable
-    echo "NVA_CONFIG_SCRIPT: Proceeding to prepare primary BIND zone file." # Added for clarity
-    # Directly use the variables, assuming they are valid if enable_bind_server is true
-    PRIMARY_ZONE_DIR=$(dirname "${bind_primary_zone_file_path}")
-    echo "NVA_CONFIG_SCRIPT: Creating BIND zone directory $${PRIMARY_ZONE_DIR} if it doesn't exist."
-    mkdir -p "$${PRIMARY_ZONE_DIR}"
-    echo "NVA_CONFIG_SCRIPT: Writing primary zone file to ${bind_primary_zone_file_path}"
-    cat <<< "${bind_primary_zone_file_content}" > "${bind_primary_zone_file_path}"
+    echo "NVA_CONFIG_SCRIPT: DEBUG: Temporarily disabling 'set -u' for writing zone file."
+    set +u # Disable unbound variable checking
+
+    printf '%s' "${bind_primary_zone_file_content}" > "${bind_primary_zone_file_path}"
+
+    echo "NVA_CONFIG_SCRIPT: DEBUG: Re-enabling 'set -u'. Zone file write attempted."
+    set -u # Re-enable unbound variable checking (assuming it was on due to -euo at the start)
 
     echo "NVA_CONFIG_SCRIPT: Setting BIND file/directory permissions..."
     chown -R root:bind /etc/bind

@@ -99,7 +99,7 @@ locals {
     routing_ranges_onprem_str = local.routing_ranges_onprem_str
     routing_ranges_azure_str  = local.routing_ranges_azure_str
 
-    on_prem_source_ip = var.on_prem_source_ip # used to allow ssh access from on prem ip only
+    # on_prem_source_ip = var.on_prem_source_ip # used to allow ssh access from on prem ip only
 
     enable_bind_server          = lower(tostring(var.enable_bind_server))
     bind_primary_zone_file_path = var.bind_primary_zone_file_path

@@ -90,8 +90,8 @@ echo "NVA_FIREWALL_SCRIPT: Allowing SSH on \$TRUST_IFACE (port 22)"
 iptables -A INPUT -i "\$TRUST_IFACE" -p tcp --dport 22 -j ACCEPT
 
 # SSH from a single allowed public IP on untrust
-echo "NVA_FIREWALL_SCRIPT: Allowing SSH on \$UNTRUST_IFACE (port 22) from ${on_prem_source_ip}"
-iptables -A INPUT -i "\$UNTRUST_IFACE" -p tcp --dport 22 -s "${on_prem_source_ip}" -j ACCEPT
+echo "NVA_FIREWALL_SCRIPT: Allowing SSH on \$UNTRUST_IFACE (port 22) - Source controlled by NSG"
+iptables -A INPUT -i "\$UNTRUST_IFACE" -p tcp --dport 22 -j ACCEPT
 
 # Ping / SSH to the WireGuard tunnel address (from on-prem ranges)
 echo "NVA_FIREWALL_SCRIPT: Allowing ICMP and SSH to WG tunnel IP (\$WG_SERVER_IP) from on-prem"

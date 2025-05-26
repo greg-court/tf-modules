@@ -96,6 +96,11 @@ locals {
     routing_ranges_azure_str  = local.routing_ranges_azure_str
 
     on_prem_source_ip = var.on_prem_source_ip # used to allow ssh access from on prem ip only
+
+    bind_named_conf_options_content = var.bind_named_conf_options_content
+    bind_named_conf_local_content   = var.bind_named_conf_local_content
+    bind_primary_zone_file_content  = var.bind_primary_zone_file_content
+    bind_primary_zone_file_path     = var.bind_primary_zone_file_path
   }
 }
 

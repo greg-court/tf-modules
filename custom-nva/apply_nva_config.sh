@@ -150,6 +150,12 @@ if [ -n "\$ONPREM_RANGES_STR" ]; then
   done
 fi
 
+# DNS to NVA
+iptables -A INPUT -i "$TRUST_IFACE" -p udp --dport 53 -j ACCEPT
+iptables -A INPUT -i "$TRUST_IFACE" -p tcp --dport 53 -j ACCEPT
+iptables -A INPUT -i "$WG_IFACE"    -p udp --dport 53 -j ACCEPT
+iptables -A INPUT -i "$WG_IFACE"    -p tcp --dport 53 -j ACCEPT
+
 # ---------------------------------------------------------------------------
 # 2.5 NAT (masquerade) - every egress to the untrust NIC gets SNAT'd
 # ---------------------------------------------------------------------------
@@ -198,7 +204,61 @@ else
 fi
 
 ################################################################################
-# 4. Execute firewall script + enable services
+# 4. Configure BIND9 DNS (if enabled)
+################################################################################
+if [ "${enable_bind_server,,}" == "true" ]; then
+    echo "NVA_CONFIG_SCRIPT: Configuring BIND9 DNS server..."
+    ZONES_DIR="/etc/bind"
+
+    # Write main config files
+    if [ -n "${bind_named_conf_options_content:-}" ]; then
+        echo "NVA_CONFIG_SCRIPT: Writing /etc/bind/named.conf.options"
+        echo "${bind_named_conf_options_content}" > /etc/bind/named.conf.options
+    else
+        echo "NVA_CONFIG_SCRIPT: WARNING - bind_named_conf_options_content is empty."
+    fi
+
+    if [ -n "${bind_named_conf_local_content:-}" ]; then
+        echo "NVA_CONFIG_SCRIPT: Writing /etc/bind/named.conf.local"
+        echo "${bind_named_conf_local_content}" > /etc/bind/named.conf.local
+    else
+        echo "NVA_CONFIG_SCRIPT: WARNING - bind_named_conf_local_content is empty."
+    fi
+
+    # Write the primary zone file
+    if [ -n "${bind_primary_zone_file_content:-}" ] && [ -n "${bind_primary_zone_file_path:-}" ]; then
+        PRIMARY_ZONE_DIR=$(dirname "${bind_primary_zone_file_path}")
+        echo "NVA_CONFIG_SCRIPT: Creating BIND zone directory $PRIMARY_ZONE_DIR if it doesn't exist."
+        mkdir -p "$PRIMARY_ZONE_DIR"
+        echo "NVA_CONFIG_SCRIPT: Writing primary zone file to ${bind_primary_zone_file_path}"
+        echo "${bind_primary_zone_file_content}" > "${bind_primary_zone_file_path}"
+    else
+        echo "NVA_CONFIG_SCRIPT: WARNING - Primary zone file content or path is empty."
+    fi
+
+    echo "NVA_CONFIG_SCRIPT: Setting BIND file/directory permissions..."
+    chown -R root:bind /etc/bind # Set group ownership for /etc/bind and its contents
+    chmod -R ug=rwX,o=rX /etc/bind # Set appropriate read/write/execute permissions
+
+    # Specifically for /var/cache/bind (working directory from named.conf.options)
+    if [ -d "/var/cache/bind" ]; then
+        chown bind:bind /var/cache/bind
+        chmod 770 /var/cache/bind # Or 750, BIND needs to write here
+    fi
+
+    echo "NVA_CONFIG_SCRIPT: Validating BIND configuration..."
+    if named-checkconf -z /etc/bind/named.conf; then # Check all included files and zones
+        echo "NVA_CONFIG_SCRIPT: BIND configuration is valid."
+    else
+        echo "NVA_CONFIG_SCRIPT: BIND configuration validation FAILED. Check BIND logs and /var/lib/waagent logs for details."
+        exit 1
+    fi
+else
+    echo "NVA_CONFIG_SCRIPT: BIND9 DNS server configuration is disabled."
+fi
+
+################################################################################
+# 5. Execute firewall script + enable services
 ################################################################################
 echo "NVA_CONFIG_SCRIPT: Executing /opt/setup_firewall.sh..."
 /opt/setup_firewall.sh
@@ -210,5 +270,11 @@ systemctl start netfilter-persistent
 echo "NVA_CONFIG_SCRIPT: Enabling and starting WireGuard (wg-quick@wg0)..."
 systemctl enable wg-quick@wg0
 systemctl start wg-quick@wg0
+
+if [ "${enable_bind_server,,}" == "true" ]; then
+    echo "NVA_CONFIG_SCRIPT: Enabling and restarting BIND9 (bind9 service)..."
+    systemctl enable bind9
+    systemctl restart bind9 --no-block
+fi
 
 echo "NVA_CONFIG_SCRIPT: NVA configuration application finished."

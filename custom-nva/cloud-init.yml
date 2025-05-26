@@ -6,6 +6,8 @@ packages:
   - wireguard
   - wireguard-tools
   - iptables-persistent
+  - bind9
+  - bind9-utils
   - net-tools
   - inetutils-ping
   - tcpdump

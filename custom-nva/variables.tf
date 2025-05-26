@@ -113,3 +113,38 @@ variable "on_prem_source_ip" {
   description = "The public IP address from which SSH to the NVA's untrust interface is allowed."
   type        = string
 }
+
+################### BIND DNS Server Configuration Variables ###################
+
+variable "enable_bind_server" {
+  description = "Flag to enable BIND DNS server configuration on the NVA."
+  type        = bool
+  default     = true
+}
+
+variable "bind_named_conf_options_content" {
+  description = "Content for the /etc/bind/named.conf.options file."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "bind_named_conf_local_content" {
+  description = "Content for the /etc/bind/named.conf.local file."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "bind_primary_zone_file_content" {
+  description = "Content for the primary BIND zone file (e.g., db.yourdomain.local)."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "bind_primary_zone_file_path" {
+  description = "The full path on the NVA where the primary zone file should be placed (e.g., /etc/bind/zones/db.yourdomain.local). This path must match what's in named.conf.local."
+  type        = string
+  default     = "/etc/bind/zones/db.primaryzone" # A generic default
+}

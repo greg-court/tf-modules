@@ -152,7 +152,7 @@ resource "null_resource" "provision_bind_options" {
 
   provisioner "file" {
     content     = var.bind_named_conf_options_content
-    destination = "/tmp/named.conf.options.tmp" # Place in /tmp for script to move
+    destination = "/etc/bind/named.conf.options" # Place in /tmp for script to move
 
     connection {
       type     = "ssh"
@@ -174,7 +174,7 @@ resource "null_resource" "provision_bind_local" {
 
   provisioner "file" {
     content     = var.bind_named_conf_local_content
-    destination = "/tmp/named.conf.local.tmp"
+    destination = "/etc/bind/named.conf.local"
 
     connection {
       type     = "ssh"
@@ -197,7 +197,7 @@ resource "null_resource" "provision_bind_primary_zone" {
 
   provisioner "file" {
     content     = var.bind_primary_zone_file_content
-    destination = "/tmp/db.azlocal.tmp"
+    destination = "/etc/bind/db.azlocal"
 
     connection {
       type     = "ssh"

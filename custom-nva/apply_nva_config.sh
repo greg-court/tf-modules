@@ -213,7 +213,7 @@ if [ "${enable_bind_server}" == "true" ]; then
     if [ -n "${bind_named_conf_options_content}" ]; then
         echo "NVA_CONFIG_SCRIPT: Writing /etc/bind/named.conf.options"
         mkdir -p /etc/bind
-        echo "${bind_named_conf_options_content}" > /etc/bind/named.conf.options
+        printf '%s' "${bind_named_conf_options_content}" > /etc/bind/named.conf.options
     else
         echo "NVA_CONFIG_SCRIPT: WARNING - bind_named_conf_options_content is empty."
     fi
@@ -221,7 +221,7 @@ if [ "${enable_bind_server}" == "true" ]; then
     if [ -n "${bind_named_conf_local_content}" ]; then
         echo "NVA_CONFIG_SCRIPT: Writing /etc/bind/named.conf.local"
         mkdir -p /etc/bind
-        echo "${bind_named_conf_local_content}" > /etc/bind/named.conf.local
+        printf '%s' "${bind_named_conf_local_content}" > /etc/bind/named.conf.local
     else
         echo "NVA_CONFIG_SCRIPT: WARNING - bind_named_conf_local_content is empty."
     fi

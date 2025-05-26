@@ -187,13 +187,13 @@ resource "null_resource" "provision_bind_local" {
 resource "null_resource" "provision_bind_primary_zone" {
   triggers = {
     content_sha1 = sha1(var.bind_primary_zone_file_content)
-    path         = var.bind_primary_zone_file_path # Include path if it could change and affect destination logic
+    path         = var.bind_primary_zone_file_path
     vm_id        = azurerm_linux_virtual_machine.nva.id
   }
 
   provisioner "file" {
     content     = var.bind_primary_zone_file_content
-    destination = "/tmp/db.azlocal.tmp" # Fixed temp name, script will use var.bind_primary_zone_file_path for final move
+    destination = "/tmp/db.azlocal.tmp"
 
     connection {
       type        = "ssh"
@@ -218,11 +218,10 @@ resource "terraform_data" "nva_config_trigger" {
 }
 
 resource "azurerm_virtual_machine_run_command" "nva_apply_config" {
-  name               = "apply-nva-configuration" # Or any descriptive name
+  name               = "apply-nva-configuration"
   virtual_machine_id = azurerm_linux_virtual_machine.nva.id
-  location           = azurerm_linux_virtual_machine.nva.location # Use VM's location
+  location           = azurerm_linux_virtual_machine.nva.location
 
-  # The script will be run as root
   run_as_user = "root"
 
   source {
@@ -233,8 +232,6 @@ resource "azurerm_virtual_machine_run_command" "nva_apply_config" {
   lifecycle {
     replace_triggered_by = [
       terraform_data.nva_config_trigger,
-      # We also want to ensure this runs *after* the files are provisioned by the null_resources
-      # particularly if any of the null_resources are replaced.
       null_resource.provision_bind_options,
       null_resource.provision_bind_local,
       null_resource.provision_bind_primary_zone,
@@ -245,16 +242,4 @@ resource "azurerm_virtual_machine_run_command" "nva_apply_config" {
     null_resource.provision_bind_local,
     null_resource.provision_bind_primary_zone,
   ]
-  # If your script needs parameters that are sensitive:
-  # protected_parameters = {
-  #   "some_secret" = var.my_secret_value
-  # }
-  # And the script would access it via: echo $some_secret
-  # However, for your current setup, embedding via templatefile is fine for non-secrets.
-  # wg_server_private_key and wg_peer_public_key are sensitive.
-  # The templatefile approach bakes them into the script content.
-  # Run Command has `protected_parameters` but `source { script = ... }` is not inherently protected in tfstate if output.
-  # Consider how these secrets are managed. If Key Vault, their values are resolved by Terraform apply.
-  # For truly sensitive values passed to the script at runtime, use protected_parameters and have the script expect them as env vars.
-  # Given your current setup directly embeds them, templatefile maintains that pattern.
 }

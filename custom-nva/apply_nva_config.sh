@@ -208,11 +208,12 @@ fi
 ################################################################################
 if [ "${enable_bind_server,,}" == "true" ]; then
     echo "NVA_CONFIG_SCRIPT: Configuring BIND9 DNS server..."
-    ZONES_DIR="/etc/bind"
 
     # Write main config files
     if [ -n "${bind_named_conf_options_content:-}" ]; then
         echo "NVA_CONFIG_SCRIPT: Writing /etc/bind/named.conf.options"
+        # Ensure /etc/bind exists (it should be created by package install)
+        mkdir -p /etc/bind
         echo "${bind_named_conf_options_content}" > /etc/bind/named.conf.options
     else
         echo "NVA_CONFIG_SCRIPT: WARNING - bind_named_conf_options_content is empty."
@@ -220,15 +221,16 @@ if [ "${enable_bind_server,,}" == "true" ]; then
 
     if [ -n "${bind_named_conf_local_content:-}" ]; then
         echo "NVA_CONFIG_SCRIPT: Writing /etc/bind/named.conf.local"
+        mkdir -p /etc/bind
         echo "${bind_named_conf_local_content}" > /etc/bind/named.conf.local
     else
         echo "NVA_CONFIG_SCRIPT: WARNING - bind_named_conf_local_content is empty."
     fi
 
-    # Write the primary zone file
+    # Write the primary zone file using the path variable
     if [ -n "${bind_primary_zone_file_content:-}" ] && [ -n "${bind_primary_zone_file_path:-}" ]; then
         PRIMARY_ZONE_DIR=$(dirname "${bind_primary_zone_file_path}")
-        echo "NVA_CONFIG_SCRIPT: Creating BIND zone directory $PRIMARY_ZONE_DIR if it doesn't exist."
+        echo "NVA_CONFIG_SCRIPT: Ensuring BIND zone directory $PRIMARY_ZONE_DIR exists."
         mkdir -p "$PRIMARY_ZONE_DIR"
         echo "NVA_CONFIG_SCRIPT: Writing primary zone file to ${bind_primary_zone_file_path}"
         echo "${bind_primary_zone_file_content}" > "${bind_primary_zone_file_path}"
@@ -237,21 +239,26 @@ if [ "${enable_bind_server,,}" == "true" ]; then
     fi
 
     echo "NVA_CONFIG_SCRIPT: Setting BIND file/directory permissions..."
-    chown -R root:bind /etc/bind # Set group ownership for /etc/bind and its contents
-    chmod -R ug=rwX,o=rX /etc/bind # Set appropriate read/write/execute permissions
+    chown -R root:bind /etc/bind
+    find /etc/bind -type d -exec chmod 775 {} \; # dirs: rwxrwxr-x
+    find /etc/bind -type f -exec chmod 664 {} \; # files: rw-rw-r--
 
-    # Specifically for /var/cache/bind (working directory from named.conf.options)
-    if [ -d "/var/cache/bind" ]; then
-        chown bind:bind /var/cache/bind
-        chmod 770 /var/cache/bind # Or 750, BIND needs to write here
+    BIND_WORKING_DIR="/var/cache/bind" # Assuming this is in your named.conf.options
+    if [ -d "$BIND_WORKING_DIR" ]; then
+        echo "NVA_CONFIG_SCRIPT: Setting permissions for BIND working directory $BIND_WORKING_DIR"
+        chown -R bind:bind "$BIND_WORKING_DIR"
+        chmod -R 770 "$BIND_WORKING_DIR" # rwxrwx---
+    else
+        echo "NVA_CONFIG_SCRIPT: WARNING - BIND_WORKING_DIR $BIND_WORKING_DIR not found. Check named.conf.options."
     fi
 
     echo "NVA_CONFIG_SCRIPT: Validating BIND configuration..."
-    if named-checkconf -z /etc/bind/named.conf; then # Check all included files and zones
-        echo "NVA_CONFIG_SCRIPT: BIND configuration is valid."
+
+    if named-checkconf -z /etc/bind/named.conf; then
+        echo "NVA_CONFIG_SCRIPT: BIND configuration appears valid."
     else
-        echo "NVA_CONFIG_SCRIPT: BIND configuration validation FAILED. Check BIND logs and /var/lib/waagent logs for details."
-        exit 1
+        echo "NVA_CONFIG_SCRIPT: BIND configuration validation FAILED. Please check BIND logs and NVA logs for details."
+        exit 1 # Critical if BIND config is bad
     fi
 else
     echo "NVA_CONFIG_SCRIPT: BIND9 DNS server configuration is disabled."

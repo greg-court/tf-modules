@@ -146,5 +146,5 @@ variable "bind_primary_zone_file_content" {
 variable "bind_primary_zone_file_path" {
   description = "The full path on the NVA where the primary zone file should be placed (e.g., /etc/bind/zones/db.yourdomain.local). This path must match what's in named.conf.local."
   type        = string
-  default     = "/etc/bind/zones/db.primaryzone" # A generic default
+  default     = "/etc/bind/db.primary" # A generic default
 }

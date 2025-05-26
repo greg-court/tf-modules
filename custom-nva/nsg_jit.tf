@@ -1,22 +1,21 @@
 data "http" "devops_agent_ip" {
   url = "https://www.wtfismyip.com"
 }
-resource "null_resource" "manage_devops_ssh_rule" {
-  # Triggers: Re-create this null_resource (and thus re-run its provisioners)
-  # if the VM ID changes OR if any BIND file content changes (which means files need re-provisioning).
+
+# --- Step 1: Add the Temporary NSG Rule ---
+resource "null_resource" "add_temp_ssh_rule" {
+  # Triggers: Re-run if VM changes or BIND content changes, or agent IP changes
   triggers = {
     vm_id                          = azurerm_linux_virtual_machine.nva.id
     bind_options_content_sha1      = sha1(var.bind_named_conf_options_content)
     bind_local_content_sha1        = sha1(var.bind_named_conf_local_content)
     bind_primary_zone_content_sha1 = sha1(var.bind_primary_zone_file_content)
-    # This ensures the rule is (re)created if the agent IP changes between applies,
-    # which is unlikely for a single apply but good for robustness.
-    devops_agent_ip_trigger        = local.devops_agent_ip
+    devops_agent_ip_trigger        = local.devops_agent_ip # From main.tf locals
   }
 
-  # ADD THE NSG RULE (runs when null_resource is created/replaced)
   provisioner "local-exec" {
     command = <<EOT
+echo "Attempting to add NSG rule ${local.temp_nsg_rule_name_ssh_devops} for IP ${local.devops_agent_ip}..."
 az network nsg rule create \
   --resource-group "${local.untrust_nsg_resource_group_name}" \
   --nsg-name "${local.untrust_nsg_name}" \
@@ -26,22 +25,45 @@ az network nsg rule create \
   --destination-port-ranges 22 \
   --access Allow \
   --protocol Tcp \
-  --description "Temp SSH for DevOps Agent (Terraform)"
-EOT
-    interpreter = ["bash", "-c"] # Or powershell if your agent uses that by default for az commands
-    # This assumes Azure CLI is logged in and configured on the DevOps agent.
-  }
-
-  # REMOVE THE NSG RULE (runs when null_resource is destroyed/replaced)
-  provisioner "local-exec" {
-    when    = destroy
-    command = <<EOT
-az network nsg rule delete \
-  --resource-group "${local.untrust_nsg_resource_group_name}" \
-  --nsg-name "${local.untrust_nsg_name}" \
-  --name "${local.temp_nsg_rule_name_ssh_devops}" || true # Adding "|| true" so it doesn't fail if rule already gone
+  --description "Temp SSH for DevOps Agent (Terraform - Add)"
+echo "NSG rule ${local.temp_nsg_rule_name_ssh_devops} add command executed."
 EOT
     interpreter = ["bash", "-c"]
   }
-  depends_on = [azurerm_linux_virtual_machine.nva] # Ensure VM and its NSG exist
+  depends_on = [azurerm_linux_virtual_machine.nva] # Ensure VM (and its NSG/PIP) is available
+}
+
+# --- Step 3: Remove the Temporary NSG Rule ---
+resource "null_resource" "remove_temp_ssh_rule" {
+  # Triggers: This should run after files are provisioned.
+  # Its replacement should be tied to the same conditions that required provisioning.
+  triggers = {
+    vm_id                          = azurerm_linux_virtual_machine.nva.id # Keep consistent
+    bind_options_content_sha1      = sha1(var.bind_named_conf_options_content)
+    bind_local_content_sha1        = sha1(var.bind_named_conf_local_content)
+    bind_primary_zone_content_sha1 = sha1(var.bind_primary_zone_file_content)
+    # Adding a trigger based on the add_rule resource ensures this runs if add_rule runs
+    add_rule_done_trigger          = null_resource.add_temp_ssh_rule.id
+  }
+
+  provisioner "local-exec" {
+    # This provisioner runs when this null_resource is created or replaced.
+    # We want it to run *after* file provisioning.
+    command = <<EOT
+echo "Attempting to remove NSG rule ${local.temp_nsg_rule_name_ssh_devops}..."
+az network nsg rule delete \
+  --resource-group "${local.untrust_nsg_resource_group_name}" \
+  --nsg-name "${local.untrust_nsg_name}" \
+  --name "${local.temp_nsg_rule_name_ssh_devops}" || echo "Rule ${local.temp_nsg_rule_name_ssh_devops} not found or already deleted."
+echo "NSG rule ${local.temp_nsg_rule_name_ssh_devops} delete command executed."
+EOT
+    interpreter = ["bash", "-c"]
+  }
+
+  # This resource depends on all file provisioners completing
+  depends_on = [
+    null_resource.provision_bind_options,
+    null_resource.provision_bind_local,
+    null_resource.provision_bind_primary_zone,
+  ]
 }

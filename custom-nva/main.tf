@@ -4,10 +4,10 @@ terraform {
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
-      http = {
-        source  = "hashicorp/http"
-        version = "~> 3.4"
-      }
+    }
+    http = {
+      source  = "hashicorp/http"
+      version = ">= 3.4"
     }
   }
 }
@@ -163,7 +163,7 @@ resource "null_resource" "provision_bind_options" {
       agent       = false
     }
   }
-  depends_on = [null_resource.manage_devops_ssh_rule]
+  depends_on = [null_resource.add_temp_ssh_rule]
 }
 
 resource "null_resource" "provision_bind_local" {
@@ -185,7 +185,7 @@ resource "null_resource" "provision_bind_local" {
       agent       = false
     }
   }
-  depends_on = [null_resource.manage_devops_ssh_rule]
+  depends_on = [null_resource.add_temp_ssh_rule]
 }
 
 resource "null_resource" "provision_bind_primary_zone" {
@@ -208,7 +208,7 @@ resource "null_resource" "provision_bind_primary_zone" {
       agent       = false
     }
   }
-  depends_on = [null_resource.manage_devops_ssh_rule]
+  depends_on = [null_resource.add_temp_ssh_rule]
 }
 
 resource "terraform_data" "nva_config_trigger" {
@@ -232,18 +232,13 @@ resource "azurerm_virtual_machine_run_command" "nva_apply_config" {
     script = templatefile("${path.module}/apply_nva_config.sh", local.template_vars)
   }
 
-  # This lifecycle block ensures the run command is re-triggered if the content of the template file changes.
   lifecycle {
     replace_triggered_by = [
       terraform_data.nva_config_trigger,
-      null_resource.provision_bind_options,
-      null_resource.provision_bind_local,
-      null_resource.provision_bind_primary_zone,
+      null_resource.remove_temp_ssh_rule,
     ]
   }
   depends_on = [
-    null_resource.provision_bind_options,
-    null_resource.provision_bind_local,
-    null_resource.provision_bind_primary_zone,
+    null_resource.remove_temp_ssh_rule,
   ]
 }

@@ -1,0 +1,22 @@
+#cloud-config
+package_update: true
+package_upgrade: false # Or true, based on your preference/policy
+
+packages:
+  - wireguard
+  - wireguard-tools
+  - iptables-persistent
+  - net-tools
+  - inetutils-ping
+  - tcpdump
+  - dnsutils
+  - netcat-openbsd
+  - tcptraceroute
+  - conntrack
+# Add any other essential base packages here that are truly one-time setup
+# All other configuration (WireGuard files, firewall script, runcmd actions)
+# will be handled by the azurerm_virtual_machine_run_command.
+
+runcmd:
+  # Add any other cloud-init runcmd tasks here first if needed
+  - [sh, -c, 'touch /var/lib/cloud/instance/boot-finished']

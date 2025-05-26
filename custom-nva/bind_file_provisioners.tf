@@ -14,7 +14,7 @@ resource "null_resource" "provision_bind_options" {
       user     = var.admin_username
       password = var.admin_password
       host     = azurerm_public_ip.pip.ip_address # Assumes pip is created before this null_resource implicitly
-      timeout  = "2m"
+      timeout  = "3m"
       agent    = false
     }
   }
@@ -36,7 +36,7 @@ resource "null_resource" "provision_bind_local" {
       user     = var.admin_username
       password = var.admin_password
       host     = azurerm_public_ip.pip.ip_address
-      timeout  = "2m"
+      timeout  = "3m"
       agent    = false
     }
   }
@@ -59,7 +59,7 @@ resource "null_resource" "provision_bind_primary_zone" {
       user     = var.admin_username
       password = var.admin_password
       host     = azurerm_public_ip.pip.ip_address
-      timeout  = "2m"
+      timeout  = "3m"
       agent    = false
     }
   }

@@ -233,8 +233,8 @@ if [ "${enable_bind_server}" == "true" ]; then
         mkdir -p "$${PRIMARY_ZONE_DIR}"
         echo "NVA_CONFIG_SCRIPT: Writing primary zone file to ${bind_primary_zone_file_path}"
         cat <<ZONEFILE > "${bind_primary_zone_file_path}"
-        ${bind_primary_zone_file_content}
-        ZONEFILE
+${bind_primary_zone_file_content}
+ZONEFILE
     else
         echo "NVA_CONFIG_SCRIPT: WARNING - Primary zone file content or path is empty."
     fi

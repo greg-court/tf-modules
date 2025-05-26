@@ -98,9 +98,6 @@ locals {
     on_prem_source_ip = var.on_prem_source_ip # used to allow ssh access from on prem ip only
 
     enable_bind_server              = lower(tostring(var.enable_bind_server))
-    bind_named_conf_options_content = var.bind_named_conf_options_content
-    bind_named_conf_local_content   = var.bind_named_conf_local_content
-    bind_primary_zone_file_content  = var.bind_primary_zone_file_content
     bind_primary_zone_file_path     = var.bind_primary_zone_file_path
   }
 }
@@ -140,6 +137,43 @@ resource "azurerm_linux_virtual_machine" "nva" {
   boot_diagnostics {}
 
   custom_data = base64encode(templatefile("${path.module}/cloud-init.yml", {}))
+
+ # --- FILE PROVISIONERS FOR BIND CONFIGS ---
+  provisioner "file" {
+    content     = var.bind_named_conf_options_content
+    destination = "/etc/bind/named.conf.options"
+
+    connection {
+      type     = "ssh"
+      user     = var.admin_username
+      password = var.admin_password # Using password auth
+      host     = azurerm_public_ip.pip.ip_address
+    }
+  }
+
+  provisioner "file" {
+    content     = var.bind_named_conf_local_content
+    destination = "/etc/bind/named.conf.local"
+
+    connection {
+      type     = "ssh"
+      user     = var.admin_username
+      password = var.admin_password
+      host     = azurerm_public_ip.pip.ip_address
+    }
+  }
+
+  provisioner "file" {
+    content     = var.bind_primary_zone_file_content
+    destination = var.bind_primary_zone_file_path
+
+    connection {
+      type     = "ssh"
+      user     = var.admin_username
+      password = var.admin_password
+      host     = azurerm_public_ip.pip.ip_address
+    }
+  }
 }
 
 resource "terraform_data" "nva_config_trigger" {

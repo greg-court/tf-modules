@@ -210,7 +210,7 @@ if [ "${enable_bind_server}" == "true" ]; then
     echo "NVA_CONFIG_SCRIPT: Configuring BIND9 DNS server..."
 
     # Write main config files
-    if [ -n "${bind_named_conf_options_content:-}" ]; then
+    if [ -n "${bind_named_conf_options_content}" ]; then
         echo "NVA_CONFIG_SCRIPT: Writing /etc/bind/named.conf.options"
         # Ensure /etc/bind exists (it should be created by package install)
         mkdir -p /etc/bind
@@ -219,7 +219,7 @@ if [ "${enable_bind_server}" == "true" ]; then
         echo "NVA_CONFIG_SCRIPT: WARNING - bind_named_conf_options_content is empty."
     fi
 
-    if [ -n "${bind_named_conf_local_content:-}" ]; then
+    if [ -n "${bind_named_conf_local_content}" ]; then
         echo "NVA_CONFIG_SCRIPT: Writing /etc/bind/named.conf.local"
         mkdir -p /etc/bind
         echo "${bind_named_conf_local_content}" > /etc/bind/named.conf.local
@@ -228,7 +228,7 @@ if [ "${enable_bind_server}" == "true" ]; then
     fi
 
     # Write the primary zone file using the path variable
-    if [ -n "${bind_primary_zone_file_content:-}" ] && [ -n "${bind_primary_zone_file_path:-}" ]; then
+    if [ -n "${bind_primary_zone_file_content}" ] && [ -n "${bind_primary_zone_file_path}" ]; then
         PRIMARY_ZONE_DIR=$(dirname "${bind_primary_zone_file_path}")
         echo "NVA_CONFIG_SCRIPT: Creating BIND zone directory $${PRIMARY_ZONE_DIR} if it doesn't exist."
         mkdir -p "$${PRIMARY_ZONE_DIR}"

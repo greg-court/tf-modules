@@ -60,7 +60,6 @@ resource "null_resource" "remove_temp_ssh_rule" {
   }
 
   provisioner "local-exec" { # REMOVE THE NSG RULE
-    when        = destroy
     command     = <<EOT
   echo "Attempting to set subscription to ${local.subscription_id_from_nsg_id} for delete operation..."
   az account set --subscription "${local.subscription_id_from_nsg_id}" || { echo "WARNING: Failed to set Azure subscription for delete. Rule might not be cleaned up if in wrong subscription context."; exit 0; } # Don't fail pipeline if sub set fails on destroy

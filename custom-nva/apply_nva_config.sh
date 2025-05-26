@@ -232,7 +232,9 @@ if [ "${enable_bind_server}" == "true" ]; then
         echo "NVA_CONFIG_SCRIPT: Creating BIND zone directory $${PRIMARY_ZONE_DIR} if it doesn't exist."
         mkdir -p "$${PRIMARY_ZONE_DIR}"
         echo "NVA_CONFIG_SCRIPT: Writing primary zone file to ${bind_primary_zone_file_path}"
-        printf '%s' "${bind_primary_zone_file_content}" > "${bind_primary_zone_file_path}"
+        cat <<ZONEFILE > "${bind_primary_zone_file_path}"
+        ${bind_primary_zone_file_content}
+        ZONEFILE
     else
         echo "NVA_CONFIG_SCRIPT: WARNING - Primary zone file content or path is empty."
     fi

@@ -40,6 +40,8 @@ az network nsg rule create \
   --protocol Tcp \
   --description "Temp SSH for DevOps Agent (Terraform - Add)" || { echo "ERROR: Failed to create NSG rule"; exit 1; }
 echo "NSG rule ${local.temp_nsg_rule_name_ssh_devops} add command reported."
+echo "Pausing for 10 seconds to allow NSG rule to propagate..."
+sleep 10
 EOT
     interpreter = ["bash", "-c"]
   }

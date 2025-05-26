@@ -226,8 +226,9 @@ if [ "${enable_bind_server}" == "true" ]; then
         exit 1
     fi
 
-    PRIMARY_ZONE_DIR_PATH=$(dirname "${bind_primary_zone_file_path}")
-    mkdir -p "$PRIMARY_ZONE_DIR_PATH"
+    PRIMARY_ZONE_DIR=$(dirname "${bind_primary_zone_file_path}")
+    echo "NVA_CONFIG_SCRIPT: Ensuring BIND zone directory $${PRIMARY_ZONE_DIR} exists."
+    mkdir -p "$${PRIMARY_ZONE_DIR}"
 
     if [ -f /tmp/db.azlocal.tmp ]; then # Assuming temp name for zone file content
         cp /tmp/db.azlocal.tmp "${bind_primary_zone_file_path}"
@@ -238,10 +239,6 @@ if [ "${enable_bind_server}" == "true" ]; then
     fi
 
     mkdir -p /etc/bind
-
-    PRIMARY_ZONE_DIR=$(dirname "${bind_primary_zone_file_path}")
-    echo "NVA_CONFIG_SCRIPT: Ensuring BIND zone directory $${PRIMARY_ZONE_DIR} exists."
-    mkdir -p "$${PRIMARY_ZONE_DIR}"
 
     echo "NVA_CONFIG_SCRIPT: Setting BIND file/directory permissions..."
 
@@ -286,7 +283,6 @@ systemctl start wg-quick@wg0
 
 if [ "${enable_bind_server}" == "true" ]; then
     echo "NVA_CONFIG_SCRIPT: Enabling and restarting BIND9 (bind9 service)..."
-    systemctl enable bind9
     systemctl restart bind9 --no-block
 fi
 

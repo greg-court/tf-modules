@@ -101,8 +101,8 @@ locals {
 
     on_prem_source_ip = var.on_prem_source_ip # used to allow ssh access from on prem ip only
 
-    enable_bind_server              = lower(tostring(var.enable_bind_server))
-    bind_primary_zone_file_path     = var.bind_primary_zone_file_path
+    enable_bind_server          = lower(tostring(var.enable_bind_server))
+    bind_primary_zone_file_path = var.bind_primary_zone_file_path
   }
 }
 
@@ -155,12 +155,12 @@ resource "null_resource" "provision_bind_options" {
     destination = "/tmp/named.conf.options.tmp" # Place in /tmp for script to move
 
     connection {
-      type        = "ssh"
-      user        = var.admin_username
-      password    = var.admin_password
-      host        = azurerm_public_ip.pip.ip_address # Assumes pip is created before this null_resource implicitly
-      timeout     = "5m"
-      agent       = false
+      type     = "ssh"
+      user     = var.admin_username
+      password = var.admin_password
+      host     = azurerm_public_ip.pip.ip_address # Assumes pip is created before this null_resource implicitly
+      timeout  = "5m"
+      agent    = false
     }
   }
   depends_on = [null_resource.add_temp_ssh_rule]
@@ -177,12 +177,12 @@ resource "null_resource" "provision_bind_local" {
     destination = "/tmp/named.conf.local.tmp"
 
     connection {
-      type        = "ssh"
-      user        = var.admin_username
-      password    = var.admin_password
-      host        = azurerm_public_ip.pip.ip_address
-      timeout     = "5m"
-      agent       = false
+      type     = "ssh"
+      user     = var.admin_username
+      password = var.admin_password
+      host     = azurerm_public_ip.pip.ip_address
+      timeout  = "5m"
+      agent    = false
     }
   }
   depends_on = [null_resource.add_temp_ssh_rule]
@@ -200,12 +200,12 @@ resource "null_resource" "provision_bind_primary_zone" {
     destination = "/tmp/db.azlocal.tmp"
 
     connection {
-      type        = "ssh"
-      user        = var.admin_username
-      password    = var.admin_password
-      host        = azurerm_public_ip.pip.ip_address
-      timeout     = "5m"
-      agent       = false
+      type     = "ssh"
+      user     = var.admin_username
+      password = var.admin_password
+      host     = azurerm_public_ip.pip.ip_address
+      timeout  = "5m"
+      agent    = false
     }
   }
   depends_on = [null_resource.add_temp_ssh_rule]

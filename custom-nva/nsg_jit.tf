@@ -9,6 +9,7 @@ locals {
   devops_agent_ip                 = chomp(data.http.devops_agent_ip.response_body) # Ensure http data source is defined
   temp_nsg_rule_name_ssh_devops   = "TempAllowSSHFromDevOpsAgent"
   temp_nsg_rule_priority_ssh      = 101
+  subscription_id_from_nsg_id     = local.untrust_nsg_id_parts[2]
 }
 
 # --- Step 1: Add the Temporary NSG Rule ---
@@ -22,9 +23,12 @@ resource "null_resource" "add_temp_ssh_rule" {
     devops_agent_ip_trigger        = local.devops_agent_ip # From main.tf locals
   }
 
-  provisioner "local-exec" {
-    command = <<EOT
-echo "Attempting to add NSG rule ${local.temp_nsg_rule_name_ssh_devops} for IP ${local.devops_agent_ip}..."
+  provisioner "local-exec" { # ADD THE NSG RULE
+    command     = <<EOT
+echo "Attempting to set subscription to ${local.subscription_id_from_nsg_id}..."
+az account set --subscription "${local.subscription_id_from_nsg_id}" || { echo "ERROR: Failed to set Azure subscription ${local.subscription_id_from_nsg_id}"; exit 1; }
+
+echo "Attempting to add NSG rule ${local.temp_nsg_rule_name_ssh_devops} for IP ${local.devops_agent_ip} in RG ${local.untrust_nsg_resource_group_name}..."
 az network nsg rule create \
   --resource-group "${local.untrust_nsg_resource_group_name}" \
   --nsg-name "${local.untrust_nsg_name}" \
@@ -34,8 +38,8 @@ az network nsg rule create \
   --destination-port-ranges 22 \
   --access Allow \
   --protocol Tcp \
-  --description "Temp SSH for DevOps Agent (Terraform - Add)"
-echo "NSG rule ${local.temp_nsg_rule_name_ssh_devops} add command executed."
+  --description "Temp SSH for DevOps Agent (Terraform - Add)" || { echo "ERROR: Failed to create NSG rule"; exit 1; }
+echo "NSG rule ${local.temp_nsg_rule_name_ssh_devops} add command reported."
 EOT
     interpreter = ["bash", "-c"]
   }
@@ -52,19 +56,21 @@ resource "null_resource" "remove_temp_ssh_rule" {
     bind_local_content_sha1        = sha1(var.bind_named_conf_local_content)
     bind_primary_zone_content_sha1 = sha1(var.bind_primary_zone_file_content)
     # Adding a trigger based on the add_rule resource ensures this runs if add_rule runs
-    add_rule_done_trigger          = null_resource.add_temp_ssh_rule.id
+    add_rule_done_trigger = null_resource.add_temp_ssh_rule.id
   }
 
-  provisioner "local-exec" {
-    # This provisioner runs when this null_resource is created or replaced.
-    # We want it to run *after* file provisioning.
-    command = <<EOT
-echo "Attempting to remove NSG rule ${local.temp_nsg_rule_name_ssh_devops}..."
+  provisioner "local-exec" { # REMOVE THE NSG RULE
+    when        = destroy
+    command     = <<EOT
+  echo "Attempting to set subscription to ${local.subscription_id_from_nsg_id} for delete operation..."
+  az account set --subscription "${local.subscription_id_from_nsg_id}" || { echo "WARNING: Failed to set Azure subscription for delete. Rule might not be cleaned up if in wrong subscription context."; exit 0; } # Don't fail pipeline if sub set fails on destroy
+
+echo "Attempting to remove NSG rule ${local.temp_nsg_rule_name_ssh_devops} from RG ${local.untrust_nsg_resource_group_name}..."
 az network nsg rule delete \
   --resource-group "${local.untrust_nsg_resource_group_name}" \
   --nsg-name "${local.untrust_nsg_name}" \
-  --name "${local.temp_nsg_rule_name_ssh_devops}" || echo "Rule ${local.temp_nsg_rule_name_ssh_devops} not found or already deleted."
-echo "NSG rule ${local.temp_nsg_rule_name_ssh_devops} delete command executed."
+  --name "${local.temp_nsg_rule_name_ssh_devops}" || echo "Rule ${local.temp_nsg_rule_name_ssh_devops} not found or delete failed. This might be okay."
+echo "NSG rule ${local.temp_nsg_rule_name_ssh_devops} delete command reported."
 EOT
     interpreter = ["bash", "-c"]
   }

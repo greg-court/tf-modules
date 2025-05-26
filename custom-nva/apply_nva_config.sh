@@ -206,7 +206,9 @@ fi
 ################################################################################
 # 4. Configure BIND9 DNS (if enabled)
 ################################################################################
-if [ "${enable_bind_server,,}" == "true" ]; then
+TF_PASSED_ENABLE_BIND_SERVER_VAL="${enable_bind_server}"
+
+if [ "${TF_PASSED_ENABLE_BIND_SERVER_VAL,,}" == "true" ]; then
     echo "NVA_CONFIG_SCRIPT: Configuring BIND9 DNS server..."
 
     # Write main config files
@@ -278,7 +280,7 @@ echo "NVA_CONFIG_SCRIPT: Enabling and starting WireGuard (wg-quick@wg0)..."
 systemctl enable wg-quick@wg0
 systemctl start wg-quick@wg0
 
-if [ "${enable_bind_server,,}" == "true" ]; then
+if [ "${TF_PASSED_ENABLE_BIND_SERVER_VAL,,}" == "true" ]; then
     echo "NVA_CONFIG_SCRIPT: Enabling and restarting BIND9 (bind9 service)..."
     systemctl enable bind9
     systemctl restart bind9 --no-block

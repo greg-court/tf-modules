@@ -137,49 +137,83 @@ resource "azurerm_linux_virtual_machine" "nva" {
   boot_diagnostics {}
 
   custom_data = base64encode(templatefile("${path.module}/cloud-init.yml", {}))
+}
 
- # --- FILE PROVISIONERS FOR BIND CONFIGS ---
+resource "null_resource" "provision_bind_options" {
+  # Trigger replacement if the content changes
+  triggers = {
+    content_sha1 = sha1(var.bind_named_conf_options_content)
+    vm_id        = azurerm_linux_virtual_machine.nva.id # Ensure VM exists
+  }
+
   provisioner "file" {
     content     = var.bind_named_conf_options_content
-    destination = "/etc/bind/named.conf.options"
+    destination = "/tmp/named.conf.options.tmp" # Place in /tmp for script to move
 
     connection {
-      type     = "ssh"
-      user     = var.admin_username
-      password = var.admin_password # Using password auth
-      host     = azurerm_public_ip.pip.ip_address
+      type        = "ssh"
+      user        = var.admin_username
+      password    = var.admin_password
+      host        = azurerm_public_ip.pip.ip_address # Assumes pip is created before this null_resource implicitly
+      timeout     = "5m"
+      agent       = false
     }
+  }
+  depends_on = [azurerm_linux_virtual_machine.nva] # Explicit dependency
+}
+
+resource "null_resource" "provision_bind_local" {
+  triggers = {
+    content_sha1 = sha1(var.bind_named_conf_local_content)
+    vm_id        = azurerm_linux_virtual_machine.nva.id
   }
 
   provisioner "file" {
     content     = var.bind_named_conf_local_content
-    destination = "/etc/bind/named.conf.local"
+    destination = "/tmp/named.conf.local.tmp"
 
     connection {
-      type     = "ssh"
-      user     = var.admin_username
-      password = var.admin_password
-      host     = azurerm_public_ip.pip.ip_address
+      type        = "ssh"
+      user        = var.admin_username
+      password    = var.admin_password
+      host        = azurerm_public_ip.pip.ip_address
+      timeout     = "5m"
+      agent       = false
     }
+  }
+  depends_on = [azurerm_linux_virtual_machine.nva]
+}
+
+resource "null_resource" "provision_bind_primary_zone" {
+  triggers = {
+    content_sha1 = sha1(var.bind_primary_zone_file_content)
+    path         = var.bind_primary_zone_file_path # Include path if it could change and affect destination logic
+    vm_id        = azurerm_linux_virtual_machine.nva.id
   }
 
   provisioner "file" {
     content     = var.bind_primary_zone_file_content
-    destination = var.bind_primary_zone_file_path
+    destination = "/tmp/db.azlocal.tmp" # Fixed temp name, script will use var.bind_primary_zone_file_path for final move
 
     connection {
-      type     = "ssh"
-      user     = var.admin_username
-      password = var.admin_password
-      host     = azurerm_public_ip.pip.ip_address
+      type        = "ssh"
+      user        = var.admin_username
+      password    = var.admin_password
+      host        = azurerm_public_ip.pip.ip_address
+      timeout     = "5m"
+      agent       = false
     }
   }
+  depends_on = [azurerm_linux_virtual_machine.nva]
 }
 
 resource "terraform_data" "nva_config_trigger" {
   input = sha1(jsonencode({
-    script_content_hash = filesha1("${path.module}/apply_nva_config.sh")
-    variables_hash      = sha1(jsonencode(local.template_vars))
+    script_content_hash            = filesha1("${path.module}/apply_nva_config.sh")
+    template_variables_hash        = sha1(jsonencode(local.template_vars))
+    bind_options_content_hash      = sha1(var.bind_named_conf_options_content)
+    bind_local_content_hash        = sha1(var.bind_named_conf_local_content)
+    bind_primary_zone_content_hash = sha1(var.bind_primary_zone_file_content)
   }))
 }
 
@@ -199,9 +233,18 @@ resource "azurerm_virtual_machine_run_command" "nva_apply_config" {
   lifecycle {
     replace_triggered_by = [
       terraform_data.nva_config_trigger,
+      # We also want to ensure this runs *after* the files are provisioned by the null_resources
+      # particularly if any of the null_resources are replaced.
+      null_resource.provision_bind_options,
+      null_resource.provision_bind_local,
+      null_resource.provision_bind_primary_zone,
     ]
   }
-
+  depends_on = [
+    null_resource.provision_bind_options,
+    null_resource.provision_bind_local,
+    null_resource.provision_bind_primary_zone,
+  ]
   # If your script needs parameters that are sensitive:
   # protected_parameters = {
   #   "some_secret" = var.my_secret_value

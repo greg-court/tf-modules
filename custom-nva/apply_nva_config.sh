@@ -17,7 +17,7 @@ echo "NVA_CONFIG_SCRIPT: Starting NVA configuration application..."
 ################################################################################
 echo "NVA_CONFIG_SCRIPT: Writing /etc/wireguard/wg0.conf..."
 mkdir -p /etc/wireguard
-cat << EOF > /etc/wireguard/wg0.conf
+cat << 'EOF' > /etc/wireguard/wg0.conf
 [Interface]
 Address     = ${wg_server_address_cidr}
 PrivateKey  = ${wg_server_private_key}
@@ -37,7 +37,7 @@ echo "NVA_CONFIG_SCRIPT: Finished writing /etc/wireguard/wg0.conf."
 # 2. Create firewall / forwarding script  (/opt/setup_firewall.sh)
 ################################################################################
 echo "NVA_CONFIG_SCRIPT: Writing /opt/setup_firewall.sh..."
-cat << EOF > /opt/setup_firewall.sh
+cat << 'EOF' > /opt/setup_firewall.sh
 #!/usr/bin/env bash
 set -euo pipefail
 

@@ -1,5 +1,5 @@
 data "http" "devops_agent_ip" {
-  url = "https://ipv4.icanhazip.com"
+  url = "https://wtfismyip.com/text"
 }
 
 locals {

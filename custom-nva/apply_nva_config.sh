@@ -230,8 +230,8 @@ if [ "${enable_bind_server,,}" == "true" ]; then
     # Write the primary zone file using the path variable
     if [ -n "${bind_primary_zone_file_content:-}" ] && [ -n "${bind_primary_zone_file_path:-}" ]; then
         PRIMARY_ZONE_DIR=$(dirname "${bind_primary_zone_file_path}")
-        echo "NVA_CONFIG_SCRIPT: Ensuring BIND zone directory $PRIMARY_ZONE_DIR exists."
-        mkdir -p "$PRIMARY_ZONE_DIR"
+        echo "NVA_CONFIG_SCRIPT: Creating BIND zone directory $${PRIMARY_ZONE_DIR} if it doesn't exist."
+        mkdir -p "$${PRIMARY_ZONE_DIR}"
         echo "NVA_CONFIG_SCRIPT: Writing primary zone file to ${bind_primary_zone_file_path}"
         echo "${bind_primary_zone_file_content}" > "${bind_primary_zone_file_path}"
     else
@@ -243,13 +243,13 @@ if [ "${enable_bind_server,,}" == "true" ]; then
     find /etc/bind -type d -exec chmod 775 {} \; # dirs: rwxrwxr-x
     find /etc/bind -type f -exec chmod 664 {} \; # files: rw-rw-r--
 
-    BIND_WORKING_DIR="/var/cache/bind" # Assuming this is in your named.conf.options
+    BIND_WORKING_DIR="/var/cache/bind"
     if [ -d "$BIND_WORKING_DIR" ]; then
-        echo "NVA_CONFIG_SCRIPT: Setting permissions for BIND working directory $BIND_WORKING_DIR"
+        echo "NVA_CONFIG_SCRIPT: Setting permissions for BIND working directory $${BIND_WORKING_DIR}"
         chown -R bind:bind "$BIND_WORKING_DIR"
-        chmod -R 770 "$BIND_WORKING_DIR" # rwxrwx---
+        chmod -R 770 "$BIND_WORKING_DIR"
     else
-        echo "NVA_CONFIG_SCRIPT: WARNING - BIND_WORKING_DIR $BIND_WORKING_DIR not found. Check named.conf.options."
+        echo "NVA_CONFIG_SCRIPT: WARNING - BIND_WORKING_DIR $${BIND_WORKING_DIR} not found. Check named.conf.options." # Escaped
     fi
 
     echo "NVA_CONFIG_SCRIPT: Validating BIND configuration..."

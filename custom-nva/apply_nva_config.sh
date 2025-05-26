@@ -209,6 +209,34 @@ fi
 if [ "${enable_bind_server}" == "true" ]; then
     echo "NVA_CONFIG_SCRIPT: Configuring BIND9 DNS server..."
 
+    echo "NVA_CONFIG_SCRIPT: Moving BIND configuration files into place..."
+    if [ -f /tmp/named.conf.options.tmp ]; then
+        cp /tmp/named.conf.options.tmp /etc/bind/named.conf.options
+        echo "NVA_CONFIG_SCRIPT: Copied /tmp/named.conf.options.tmp to /etc/bind/named.conf.options"
+    else
+        echo "NVA_CONFIG_SCRIPT: ERROR - /tmp/named.conf.options.tmp not found!"
+        exit 1
+    fi
+
+    if [ -f /tmp/named.conf.local.tmp ]; then
+        cp /tmp/named.conf.local.tmp /etc/bind/named.conf.local
+        echo "NVA_CONFIG_SCRIPT: Copied /tmp/named.conf.local.tmp to /etc/bind/named.conf.local"
+    else
+        echo "NVA_CONFIG_SCRIPT: ERROR - /tmp/named.conf.local.tmp not found!"
+        exit 1
+    fi
+
+    PRIMARY_ZONE_DIR_PATH=$(dirname "${bind_primary_zone_file_path}")
+    mkdir -p "$PRIMARY_ZONE_DIR_PATH"
+
+    if [ -f /tmp/db.azlocal.tmp ]; then # Assuming temp name for zone file content
+        cp /tmp/db.azlocal.tmp "${bind_primary_zone_file_path}"
+        echo "NVA_CONFIG_SCRIPT: Copied /tmp/db.azlocal.tmp to ${bind_primary_zone_file_path}"
+    else
+        echo "NVA_CONFIG_SCRIPT: ERROR - /tmp/db.azlocal.tmp (zone file content) not found!"
+        exit 1
+    fi
+
     mkdir -p /etc/bind
 
     PRIMARY_ZONE_DIR=$(dirname "${bind_primary_zone_file_path}")

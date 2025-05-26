@@ -2,6 +2,15 @@ data "http" "devops_agent_ip" {
   url = "https://www.wtfismyip.com"
 }
 
+locals {
+  untrust_nsg_id_parts            = split("/", var.untrust_nsg_id)
+  untrust_nsg_resource_group_name = local.untrust_nsg_id_parts[4]
+  untrust_nsg_name                = local.untrust_nsg_id_parts[8]
+  devops_agent_ip                 = chomp(data.http.devops_agent_ip.response_body) # Ensure http data source is defined
+  temp_nsg_rule_name_ssh_devops   = "TempAllowSSHFromDevOpsAgent"
+  temp_nsg_rule_priority_ssh      = 101
+}
+
 # --- Step 1: Add the Temporary NSG Rule ---
 resource "null_resource" "add_temp_ssh_rule" {
   # Triggers: Re-run if VM changes or BIND content changes, or agent IP changes

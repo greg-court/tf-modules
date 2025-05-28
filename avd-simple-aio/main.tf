@@ -54,7 +54,6 @@ resource "azurerm_virtual_desktop_workspace_application_group_association" "asso
 }
 
 locals {
-
   app_group_role_assignments_flat = flatten([
     for ag_config in var.application_groups_config : [
       for group_name_str in ag_config.group_assignments : {

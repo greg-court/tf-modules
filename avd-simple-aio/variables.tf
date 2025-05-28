@@ -49,6 +49,9 @@ variable "application_groups_config" {
     friendly_name                = string
     description                  = optional(string)
     default_desktop_display_name = optional(string)
+    assignments = optional(list(object({
+      group_name = string
+    })), []) # Defaults to an empty list if not provided
   }))
 }
 

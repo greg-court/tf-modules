@@ -53,6 +53,38 @@ resource "azurerm_virtual_desktop_workspace_application_group_association" "asso
   application_group_id = each.value.id
 }
 
+locals {
+  app_group_role_assignments_flat = flatten([
+    for ag_config in var.application_groups_config : [
+      for assignment_config in ag_config.assignments : {
+        assignment_key         = "${ag_config.name}_${replace(assignment_config.group_name, "/[^a-zA-Z0-9-_]/", "_")}"
+        app_group_resource_key = ag_config.name
+        group_name_to_assign   = assignment_config.group_name
+      }
+    ]
+  ])
+
+  app_group_assignments_for_each = {
+    for assignment in local.app_group_role_assignments_flat : assignment.assignment_key => assignment
+  }
+}
+
+data "azuread_group" "assigned_avd_user_group" {
+  for_each     = local.app_group_assignments_for_each
+  display_name = each.value.group_name_to_assign
+}
+
+resource "azurerm_role_assignment" "app_group_user_assignments" {
+  for_each             = local.app_group_assignments_for_each
+  scope                = azurerm_virtual_desktop_application_group.app_groups[each.value.app_group_resource_key].id
+  role_definition_name = "Desktop Virtualization User"
+  principal_id         = data.azuread_group.assigned_avd_user_group[each.key].object_id
+
+  depends_on = [
+    azurerm_virtual_desktop_application_group.app_groups
+  ]
+}
+
 resource "azurerm_storage_account" "storage" {
   name                     = var.storage_account_config.name
   resource_group_name      = var.resource_group_name

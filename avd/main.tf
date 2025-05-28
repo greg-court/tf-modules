@@ -105,7 +105,7 @@ locals {
       }
     }
   }
-  flattened_vms = merge(local.all_vms...)
+  flattened_vms = merge(values(local.all_vms)...)
 }
 
 resource "azurerm_network_interface" "vm_nics" {

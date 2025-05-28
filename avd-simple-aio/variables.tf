@@ -49,7 +49,7 @@ variable "application_groups_config" {
     friendly_name                = string
     description                  = optional(string)
     default_desktop_display_name = optional(string)
-    group_assignments            = optional(list(string), []) # Defaults to an empty list if not provided
+    group_assignments            = optional(list(string), [])
   }))
 }
 
@@ -118,7 +118,7 @@ variable "session_hosts_config" {
     disk_size_gb           = optional(number)
     secure_boot_enabled    = optional(bool, true)
     image_config = object({
-      type             = string # "marketplace" or "gallery"
+      type             = string
       gallery_image_id = optional(string)
       marketplace_image = optional(object({
         publisher = string

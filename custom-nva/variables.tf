@@ -158,3 +158,9 @@ variable "enable_spot" {
   type        = bool
   default     = false
 }
+
+variable "ubuntu_generation" {
+  description = "Generation of the Ubuntu image to use (e.g. 1 or 2)."
+  type        = number
+  default     = 2
+}

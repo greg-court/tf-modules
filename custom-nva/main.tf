@@ -129,7 +129,7 @@ resource "azurerm_linux_virtual_machine" "nva" {
   source_image_reference {
     publisher = "canonical"
     offer     = "ubuntu-24_04-lts"
-    sku       = "minimal"
+    sku       = var.ubuntu_generation == 1 ? "minimal-gen1" : "minimal"
     version   = "latest"
   }
 

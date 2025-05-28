@@ -1,15 +1,15 @@
 resource "azurerm_virtual_desktop_host_pool" "host_pool" {
-  name                       = var.host_pool_config.name
-  location                   = var.location
-  resource_group_name        = var.resource_group_name
-  type                       = var.host_pool_config.type
+  name                     = var.host_pool_config.name
+  location                 = var.location
+  resource_group_name      = var.resource_group_name
+  type                     = var.host_pool_config.type
   maximum_sessions_allowed = var.host_pool_config.max_sessions_allowed
-  load_balancer_type         = var.host_pool_config.load_balancer_type
-  friendly_name              = var.host_pool_config.friendly_name
-  description                = var.host_pool_config.description          
-  custom_rdp_properties      = var.host_pool_config.custom_rdp_properties
-  validate_environment       = true
-  tags                       = var.tags
+  load_balancer_type       = var.host_pool_config.load_balancer_type
+  friendly_name            = var.host_pool_config.friendly_name
+  description              = var.host_pool_config.description
+  custom_rdp_properties    = var.host_pool_config.custom_rdp_properties
+  validate_environment     = true
+  tags                     = var.tags
 
   lifecycle {
     ignore_changes = [
@@ -35,21 +35,21 @@ resource "azurerm_virtual_desktop_workspace" "workspace" {
 resource "azurerm_virtual_desktop_application_group" "app_groups" {
   for_each = { for ag in var.application_groups_config : ag.name => ag }
 
-  name                          = each.value.name
-  location                      = var.location
-  resource_group_name           = var.resource_group_name
-  type                          = each.value.type
-  host_pool_id                  = azurerm_virtual_desktop_host_pool.host_pool.id
-  friendly_name                 = each.value.friendly_name
-  description                   = each.value.description
-  default_desktop_display_name  = each.value.default_desktop_display_name
-  tags                          = var.tags
+  name                         = each.value.name
+  location                     = var.location
+  resource_group_name          = var.resource_group_name
+  type                         = each.value.type
+  host_pool_id                 = azurerm_virtual_desktop_host_pool.host_pool.id
+  friendly_name                = each.value.friendly_name
+  description                  = each.value.description
+  default_desktop_display_name = each.value.default_desktop_display_name
+  tags                         = var.tags
 }
 
 resource "azurerm_virtual_desktop_workspace_application_group_association" "association" {
   for_each = azurerm_virtual_desktop_application_group.app_groups
 
-  workspace_id           = azurerm_virtual_desktop_workspace.workspace.id
+  workspace_id         = azurerm_virtual_desktop_workspace.workspace.id
   application_group_id = each.value.id
 }
 
@@ -86,17 +86,17 @@ locals {
         nic_name                = "${vm_config_val.vm_name_prefix}${inst_suffix}-nic"
 
 
-        zone                    = length(vm_config_val.zones) > 0 ? vm_config_val.zones[idx % length(vm_config_val.zones)] : null
-        patch_assessment_mode   = vm_config_val.patch_assessment_mode
-        storage_account_type    = vm_config_val.storage_account_type
-        priority                = vm_config_val.priority
+        zone                  = length(vm_config_val.zones) > 0 ? vm_config_val.zones[idx % length(vm_config_val.zones)] : null
+        patch_assessment_mode = vm_config_val.patch_assessment_mode
+        storage_account_type  = vm_config_val.storage_account_type
+        priority              = vm_config_val.priority
 
-        eviction_policy         = (vm_config_val.priority == "Spot") ? vm_config_val.eviction_policy : null
-        disk_size_gb            = vm_config_val.disk_size_gb
-        image_type              = vm_config_val.image_config.type
-        gallery_image_id        = vm_config_val.image_config.gallery_image_id
-        marketplace_image       = vm_config_val.image_config.marketplace_image
-        secure_boot_enabled     = vm_config_val.secure_boot_enabled
+        eviction_policy     = (vm_config_val.priority == "Spot") ? vm_config_val.eviction_policy : null
+        disk_size_gb        = vm_config_val.disk_size_gb
+        image_type          = vm_config_val.image_config.type
+        gallery_image_id    = vm_config_val.image_config.gallery_image_id
+        marketplace_image   = vm_config_val.image_config.marketplace_image
+        secure_boot_enabled = vm_config_val.secure_boot_enabled
       }
     }
   }
@@ -137,10 +137,10 @@ resource "azurerm_storage_account" "storage" {
 resource "azurerm_storage_share" "file_shares" {
   for_each = { for fs in var.file_shares_config : fs.name => fs }
 
-  name                 = each.value.name
+  name               = each.value.name
   storage_account_id = azurerm_storage_account.storage.id
-  enabled_protocol     = each.value.protocol
-  quota                = each.value.quota
+  enabled_protocol   = each.value.protocol
+  quota              = each.value.quota
 }
 
 resource "azurerm_network_interface" "vm_nics" {
@@ -309,24 +309,24 @@ resource "azurerm_virtual_desktop_scaling_plan" "scaling_plan" {
   dynamic "schedule" {
     for_each = var.scaling_plan_config.schedules
     content {
-      name                               = schedule.value.name
-      days_of_week                       = schedule.value.days_of_week
-      ramp_up_start_time                 = schedule.value.ramp_up_start_time
-      ramp_up_load_balancing_algorithm   = schedule.value.ramp_up_load_balancing_algorithm
-      ramp_up_minimum_hosts_percent      = schedule.value.ramp_up_minimum_hosts_percent
-      ramp_up_capacity_threshold_percent = schedule.value.ramp_up_capacity_threshold_percent
-      peak_start_time                    = schedule.value.peak_start_time
-      peak_load_balancing_algorithm      = schedule.value.peak_load_balancing_algorithm
-      ramp_down_start_time               = schedule.value.ramp_down_start_time
-      ramp_down_load_balancing_algorithm = schedule.value.ramp_down_load_balancing_algorithm
-      ramp_down_minimum_hosts_percent    = schedule.value.ramp_down_minimum_hosts_percent
+      name                                 = schedule.value.name
+      days_of_week                         = schedule.value.days_of_week
+      ramp_up_start_time                   = schedule.value.ramp_up_start_time
+      ramp_up_load_balancing_algorithm     = schedule.value.ramp_up_load_balancing_algorithm
+      ramp_up_minimum_hosts_percent        = schedule.value.ramp_up_minimum_hosts_percent
+      ramp_up_capacity_threshold_percent   = schedule.value.ramp_up_capacity_threshold_percent
+      peak_start_time                      = schedule.value.peak_start_time
+      peak_load_balancing_algorithm        = schedule.value.peak_load_balancing_algorithm
+      ramp_down_start_time                 = schedule.value.ramp_down_start_time
+      ramp_down_load_balancing_algorithm   = schedule.value.ramp_down_load_balancing_algorithm
+      ramp_down_minimum_hosts_percent      = schedule.value.ramp_down_minimum_hosts_percent
       ramp_down_capacity_threshold_percent = schedule.value.ramp_down_capacity_threshold_percent
-      ramp_down_force_logoff_users       = schedule.value.ramp_down_force_logoff_users
-      ramp_down_wait_time_minutes        = schedule.value.ramp_down_wait_time_minutes
-      ramp_down_notification_message     = schedule.value.ramp_down_notification_message
-      ramp_down_stop_hosts_when          = schedule.value.ramp_down_stop_hosts_when
-      off_peak_start_time                = schedule.value.off_peak_start_time
-      off_peak_load_balancing_algorithm  = schedule.value.off_peak_load_balancing_algorithm
+      ramp_down_force_logoff_users         = schedule.value.ramp_down_force_logoff_users
+      ramp_down_wait_time_minutes          = schedule.value.ramp_down_wait_time_minutes
+      ramp_down_notification_message       = schedule.value.ramp_down_notification_message
+      ramp_down_stop_hosts_when            = schedule.value.ramp_down_stop_hosts_when
+      off_peak_start_time                  = schedule.value.off_peak_start_time
+      off_peak_load_balancing_algorithm    = schedule.value.off_peak_load_balancing_algorithm
     }
   }
   depends_on = [azurerm_role_assignment.avd_autoscale_assignment]
@@ -340,8 +340,8 @@ data "azuread_service_principal" "avd_sp" {
 resource "azurerm_role_assignment" "avd_autoscale_assignment" {
   count = var.scaling_plan_config != null && var.scaling_plan_config.assign_autoscale_role ? 1 : 0
 
-  scope                = "/subscriptions/${var.subscription_id}/resourceGroups/${var.resource_group_name}"
-  role_definition_name = "Desktop Virtualization Power On Off Contributor"
-  principal_id         = data.azuread_service_principal.avd_sp[0].object_id
+  scope                            = "/subscriptions/${var.subscription_id}/resourceGroups/${var.resource_group_name}"
+  role_definition_name             = "Desktop Virtualization Power On Off Contributor"
+  principal_id                     = data.azuread_service_principal.avd_sp[0].object_id
   skip_service_principal_aad_check = true
 }

@@ -138,6 +138,9 @@ resource "azurerm_linux_virtual_machine" "nva" {
     storage_account_type = "Standard_LRS"
   }
 
+  priority        = var.enable_spot ? "Spot" : "Regular"
+  eviction_policy = var.enable_spot ? "Deallocate" : null
+
   boot_diagnostics {}
 
   custom_data = base64encode(templatefile("${path.module}/cloud-init.yml", {}))

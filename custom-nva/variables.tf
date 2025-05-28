@@ -152,3 +152,9 @@ variable "untrust_nsg_id" {
   description = "ID of the Network Security Group (NSG) associated with the untrust interface."
   type        = string
 }
+
+variable "enable_spot" {
+  description = "Flag to enable Spot VM configuration."
+  type        = bool
+  default     = false
+}

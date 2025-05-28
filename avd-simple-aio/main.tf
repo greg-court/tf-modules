@@ -174,6 +174,7 @@ resource "azurerm_windows_virtual_machine" "session_hosts" {
 
   lifecycle {
     ignore_changes = [
+      vm_agent_platform_updates_enabled,
       admin_password,
       patch_assessment_mode,
       tags

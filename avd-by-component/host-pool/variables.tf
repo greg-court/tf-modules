@@ -95,6 +95,7 @@ variable "session_hosts_config" {
     priority              = optional(string, "Regular")
     eviction_policy       = optional(string, "Deallocate")
     disk_size_gb          = optional(number)
+    secure_boot_enabled   = optional(bool, true)
     image_config = object({
       type             = string # "marketplace" or "gallery"
       gallery_image_id = optional(string)

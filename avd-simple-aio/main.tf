@@ -135,7 +135,7 @@ resource "azurerm_windows_virtual_machine" "session_hosts" {
   admin_password        = var.avd_host_admin_password
   patch_assessment_mode = each.value.patch_assessment_mode
 
-  secure_boot_enabled        = true
+  secure_boot_enabled        = each.value.secure_boot_enabled
   vtpm_enabled               = true
   encryption_at_host_enabled = false
 

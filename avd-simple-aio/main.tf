@@ -56,10 +56,10 @@ resource "azurerm_virtual_desktop_workspace_application_group_association" "asso
 locals {
   app_group_role_assignments_flat = flatten([
     for ag_config in var.application_groups_config : [
-      for assignment_config in ag_config.assignments : {
-        assignment_key         = "${ag_config.name}_${replace(assignment_config.group_name, "/[^a-zA-Z0-9-_]/", "_")}"
+      for group_name_str in ag_config.assignments : {
+        assignment_key         = "${ag_config.name}_${replace(group_name_str, "/[^a-zA-Z0-9-_]/", "_")}"
         app_group_resource_key = ag_config.name
-        group_name_to_assign   = assignment_config.group_name
+        group_name_to_assign   = group_name_str
       }
     ]
   ])

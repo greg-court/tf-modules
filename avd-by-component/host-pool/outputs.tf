@@ -8,21 +8,6 @@ output "host_pool_name" {
   value       = azurerm_virtual_desktop_host_pool.host_pool.name
 }
 
-output "workspace_id" {
-  description = "The ID of the created AVD Workspace."
-  value       = azurerm_virtual_desktop_workspace.workspace.id
-}
-
-output "workspace_name" {
-  description = "The name of the created AVD Workspace."
-  value       = azurerm_virtual_desktop_workspace.workspace.name
-}
-
-output "application_group_ids" {
-  description = "A map of application group names to their IDs."
-  value       = { for k, v in azurerm_virtual_desktop_application_group.app_groups : k => v.id }
-}
-
 output "storage_account_id" {
   description = "The ID of the created Storage Account."
   value       = azurerm_storage_account.storage.id
@@ -40,5 +25,11 @@ output "session_host_ids" {
 
 output "scaling_plan_id" {
   description = "The ID of the AVD Scaling Plan, if created."
-  value       = one(azurerm_virtual_desktop_scaling_plan.scaling_plan[*].id)
+  value       = one(azurerm_virtual_desktop_scaling_plan.scaling_plan[*].id) # Using one() is correct as count is 0 or 1
+}
+
+output "host_pool_registration_token" {
+  description = "The registration token for the host pool. Sensitive."
+  value       = azurerm_virtual_desktop_host_pool_registration_info.host_pool_registration.token
+  sensitive   = true
 }

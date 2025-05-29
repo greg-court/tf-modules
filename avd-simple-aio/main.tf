@@ -8,7 +8,6 @@ resource "azurerm_virtual_desktop_host_pool" "host_pool" {
   friendly_name            = var.host_pool_config.friendly_name
   description              = var.host_pool_config.description
   custom_rdp_properties    = var.host_pool_config.custom_rdp_properties
-  validate_environment     = true
   tags                     = var.tags
 
   lifecycle {

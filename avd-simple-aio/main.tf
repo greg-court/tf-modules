@@ -155,7 +155,7 @@ resource "azurerm_storage_share" "file_shares" {
 }
 
 resource "azurerm_private_endpoint" "storage_file_pe" {
-  count = var.storage_account_config.private_endpoint_subnet_id != null && var.storage_account_config.private_dns_zone_ids_file != null && length(var.storage_account_config.private_dns_zone_ids_file) > 0 ? 1 : 0
+  count = var.storage_account_config.private_endpoint_subnet_id != null ? 1 : 0
 
   name                = "${var.storage_account_config.name}-file-pe"
   location            = var.location

@@ -125,7 +125,7 @@ resource "azurerm_storage_account" "storage" {
   location                 = var.location
   account_tier             = var.storage_account_config.tier
   account_replication_type = var.storage_account_config.replication_type
-  account_kind             = "StorageV2"
+  account_kind             = var.storage_account_config.kind
 
   public_network_access_enabled   = var.storage_account_config.public_network_access_enabled
   default_to_oauth_authentication = var.storage_account_config.default_to_oauth_authentication

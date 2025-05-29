@@ -57,6 +57,7 @@ variable "storage_account_config" {
   description = "Configuration for the Storage Account for FSLogix profiles."
   type = object({
     name                                     = string
+    kind                                     = string
     tier                                     = string
     replication_type                         = string
     private_endpoint_subnet_id               = optional(string)

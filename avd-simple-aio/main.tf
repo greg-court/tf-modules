@@ -191,33 +191,34 @@ resource "azurerm_storage_share" "file_shares" {
 }
 
 locals {
-  file_share_smb_contributor_assignments_flat = flatten([
+  file_share_custom_role_assignments_flat = flatten([
     for fs_input_config in var.file_shares_config : [
-      for group_name in fs_input_config.smb_share_contributor_group_names : {
+      for assignment_config in fs_input_config.role_assignments : {
         share_name           = fs_input_config.name
-        group_display_name   = group_name
-        assignment_key       = "${fs_input_config.name}-${group_name}-SMBShareContributor"
+        group_display_name   = assignment_config.group
+        role_definition_name = assignment_config.role
+        assignment_key       = "${fs_input_config.name}-${assignment_config.group}-${replace(assignment_config.role, " ", "_")}"
       }
-    ] if length(fs_input_config.smb_share_contributor_group_names) > 0
+    ] if length(fs_input_config.role_assignments) > 0
   ])
 
-  unique_smb_contributor_group_names = {
-    for assignment in local.file_share_smb_contributor_assignments_flat :
+  unique_custom_assignment_group_names = {
+    for assignment in local.file_share_custom_role_assignments_flat :
     assignment.group_display_name => assignment.group_display_name
   }
 }
 
-data "azuread_group" "smb_share_contributor_ad_groups" {
-  for_each     = local.unique_smb_contributor_group_names
+data "azuread_group" "custom_assignment_ad_groups" {
+  for_each     = local.unique_custom_assignment_group_names
   display_name = each.key
 }
 
-resource "azurerm_role_assignment" "file_share_smb_contributor_assignments" {
-  for_each = { for assignment in local.file_share_smb_contributor_assignments_flat : assignment.assignment_key => assignment }
+resource "azurerm_role_assignment" "file_share_custom_assignments" {
+  for_each = { for assignment in local.file_share_custom_role_assignments_flat : assignment.assignment_key => assignment }
 
   scope                = azurerm_storage_share.file_shares[each.value.share_name].id
-  role_definition_name = "Storage File Data SMB Share Contributor" # Hardcoded role
-  principal_id         = data.azuread_group.smb_share_contributor_ad_groups[each.value.group_display_name].object_id
+  role_definition_name = each.value.role_definition_name
+  principal_id         = data.azuread_group.custom_assignment_ad_groups[each.value.group_display_name].object_id
 }
 
 resource "azurerm_private_endpoint" "storage_file_pe" {

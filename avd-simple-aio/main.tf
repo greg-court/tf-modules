@@ -95,6 +95,7 @@ locals {
         gallery_image_id    = vm_config_val.image_config.gallery_image_id
         marketplace_image   = vm_config_val.image_config.marketplace_image
         secure_boot_enabled = vm_config_val.secure_boot_enabled
+        license_type        = vm_config_val.license_type
       }
     }
   }

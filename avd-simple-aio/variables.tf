@@ -124,6 +124,7 @@ variable "session_hosts_config" {
     eviction_policy       = optional(string, "Deallocate")
     disk_size_gb          = optional(number)
     secure_boot_enabled   = optional(bool, true)
+    license_type          = optional(string, "None")
     image_config = object({
       type             = string
       gallery_image_id = optional(string)

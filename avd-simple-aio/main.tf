@@ -148,7 +148,7 @@ resource "azurerm_storage_account" "storage" {
 
   dynamic "blob_properties" {
     for_each = (var.storage_account_config.blob_soft_delete_retention_days != null ||
-                var.storage_account_config.container_delete_retention_days != null) ? [1] : []
+    var.storage_account_config.container_delete_retention_days != null) ? [1] : []
     content {
       dynamic "delete_retention_policy" {
         for_each = var.storage_account_config.blob_soft_delete_retention_days != null ? [1] : []
@@ -169,7 +169,8 @@ resource "azurerm_storage_account" "storage" {
 
   lifecycle {
     ignore_changes = [
-      azure_files_authentication
+      azure_files_authentication,
+      share_properties.smb
     ]
   }
 }

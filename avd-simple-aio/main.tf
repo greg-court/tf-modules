@@ -190,6 +190,36 @@ resource "azurerm_storage_share" "file_shares" {
   quota              = each.value.quota
 }
 
+locals {
+  file_share_smb_contributor_assignments_flat = flatten([
+    for fs_input_config in var.file_shares_config : [
+      for group_name in fs_input_config.smb_share_contributor_group_names : {
+        share_name           = fs_input_config.name
+        group_display_name   = group_name
+        assignment_key       = "${fs_input_config.name}-${group_name}-SMBShareContributor"
+      }
+    ] if length(fs_input_config.smb_share_contributor_group_names) > 0
+  ])
+
+  unique_smb_contributor_group_names = {
+    for assignment in local.file_share_smb_contributor_assignments_flat :
+    assignment.group_display_name => assignment.group_display_name
+  }
+}
+
+data "azuread_group" "smb_share_contributor_ad_groups" {
+  for_each     = local.unique_smb_contributor_group_names
+  display_name = each.key
+}
+
+resource "azurerm_role_assignment" "file_share_smb_contributor_assignments" {
+  for_each = { for assignment in local.file_share_smb_contributor_assignments_flat : assignment.assignment_key => assignment }
+
+  scope                = azurerm_storage_share.file_shares[each.value.share_name].id
+  role_definition_name = "Storage File Data SMB Share Contributor" # Hardcoded role
+  principal_id         = data.azuread_group.smb_share_contributor_ad_groups[each.value.group_display_name].object_id
+}
+
 resource "azurerm_private_endpoint" "storage_file_pe" {
   count = var.storage_account_config.private_endpoint_subnet_id != null ? 1 : 0
 

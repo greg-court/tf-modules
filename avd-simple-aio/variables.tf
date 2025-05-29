@@ -75,9 +75,10 @@ variable "storage_account_config" {
 variable "file_shares_config" {
   description = "A list of configurations for file shares within the storage account."
   type = list(object({
-    name     = string
-    protocol = string
-    quota    = number
+    name                              = string
+    protocol                          = string
+    quota                             = number
+    smb_share_contributor_group_names = optional(list(string), [])
   }))
 }
 

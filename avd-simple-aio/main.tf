@@ -294,7 +294,8 @@ resource "azurerm_virtual_machine_extension" "session_host_registration" {
   tags                       = var.tags
 
   settings = jsonencode({
-    modulesUrl            = "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration_09-08-2022.zip"
+    # modulesUrl            = "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration_09-08-2022.zip"
+    modulesUrl            = "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration_1.0.03047.739.zip"
     configurationFunction = "Configuration.ps1\\AddSessionHost"
     properties = {
       HostPoolName = each.value.host_pool_name

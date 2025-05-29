@@ -126,7 +126,18 @@ resource "azurerm_storage_account" "storage" {
   account_tier             = var.storage_account_config.tier
   account_replication_type = var.storage_account_config.replication_type
   account_kind             = "StorageV2"
-  tags                     = var.tags
+
+  public_network_access_enabled   = var.storage_account_config.public_network_access_enabled
+  default_to_oauth_authentication = var.storage_account_config.default_to_oauth_authentication
+
+  network_rules {
+    default_action             = var.storage_account_config.network_rules_default_action
+    bypass                     = ["AzureServices"]
+    virtual_network_subnet_ids = var.storage_account_config.network_rules_virtual_network_subnet_ids
+  }
+
+  tags = var.tags
+
   lifecycle {
     ignore_changes = [
       azure_files_authentication
@@ -141,6 +152,29 @@ resource "azurerm_storage_share" "file_shares" {
   storage_account_id = azurerm_storage_account.storage.id
   enabled_protocol   = each.value.protocol
   quota              = each.value.quota
+}
+
+resource "azurerm_private_endpoint" "storage_file_pe" {
+  count = var.storage_account_config.private_endpoint_subnet_id != null && var.storage_account_config.private_dns_zone_ids_file != null && length(var.storage_account_config.private_dns_zone_ids_file) > 0 ? 1 : 0
+
+  name                = "${var.storage_account_config.name}-file-pe"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = var.storage_account_config.private_endpoint_subnet_id
+  tags                = var.tags
+
+  private_service_connection {
+    name                           = "${var.storage_account_config.name}-psc-file"
+    private_connection_resource_id = azurerm_storage_account.storage.id
+    is_manual_connection           = false
+    subresource_names              = ["file"]
+  }
+
+  private_dns_zone_group {
+    name                 = "file-privatednszonegroup"
+    private_dns_zone_ids = var.storage_account_config.private_dns_zone_ids_file
+  }
+  depends_on = [azurerm_storage_account.storage]
 }
 
 resource "azurerm_network_interface" "vm_nics" {

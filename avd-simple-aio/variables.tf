@@ -56,9 +56,15 @@ variable "application_groups_config" {
 variable "storage_account_config" {
   description = "Configuration for the Storage Account for FSLogix profiles."
   type = object({
-    name             = string
-    tier             = string
-    replication_type = string
+    name                                     = string
+    tier                                     = string
+    replication_type                         = string
+    private_endpoint_subnet_id               = optional(string)
+    private_dns_zone_ids_file                = optional(list(string))
+    network_rules_virtual_network_subnet_ids = optional(list(string), [])
+    network_rules_default_action             = optional(string, "Deny")
+    public_network_access_enabled            = optional(bool, false)
+    default_to_oauth_authentication          = optional(bool, true)
   })
 }
 

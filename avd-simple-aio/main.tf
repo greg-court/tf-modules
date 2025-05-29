@@ -143,6 +143,13 @@ resource "azurerm_storage_account" "storage" {
       retention_policy {
         days = var.storage_account_config.share_soft_delete_retention_days
       }
+      smb {
+        authentication_types            = []
+        channel_encryption_type         = []
+        kerberos_ticket_encryption_type = []
+        multichannel_enabled            = true
+        versions                        = []
+      }
     }
   }
 
@@ -169,8 +176,7 @@ resource "azurerm_storage_account" "storage" {
 
   lifecycle {
     ignore_changes = [
-      azure_files_authentication,
-      share_properties.smb
+      azure_files_authentication
     ]
   }
 }

@@ -68,7 +68,7 @@ variable "storage_account_config" {
     default_to_oauth_authentication          = optional(bool, true)
     blob_soft_delete_retention_days          = optional(number)
     share_soft_delete_retention_days         = optional(number)
-    container_delete_retention_policy_days   = optional(number)
+    container_delete_retention_days          = optional(number)
   })
 }
 

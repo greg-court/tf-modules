@@ -89,13 +89,14 @@ locals {
         storage_account_type  = vm_config_val.storage_account_type
         priority              = vm_config_val.priority
 
-        eviction_policy     = (vm_config_val.priority == "Spot") ? vm_config_val.eviction_policy : null
-        disk_size_gb        = vm_config_val.disk_size_gb
-        image_type          = vm_config_val.image_config.type
-        gallery_image_id    = vm_config_val.image_config.gallery_image_id
-        marketplace_image   = vm_config_val.image_config.marketplace_image
-        secure_boot_enabled = vm_config_val.secure_boot_enabled
-        license_type        = vm_config_val.license_type
+        eviction_policy            = (vm_config_val.priority == "Spot") ? vm_config_val.eviction_policy : null
+        disk_size_gb               = vm_config_val.disk_size_gb
+        image_type                 = vm_config_val.image_config.type
+        gallery_image_id           = vm_config_val.image_config.gallery_image_id
+        marketplace_image          = vm_config_val.image_config.marketplace_image
+        secure_boot_enabled        = vm_config_val.secure_boot_enabled
+        license_type               = vm_config_val.license_type
+        encryption_at_host_enabled = vm_config_val.encryption_at_host_enabled
       }
     }
   }
@@ -205,8 +206,8 @@ resource "azurerm_windows_virtual_machine" "session_hosts" {
   patch_assessment_mode = each.value.patch_assessment_mode
 
   secure_boot_enabled        = each.value.secure_boot_enabled
+  encryption_at_host_enabled = each.value.encryption_at_host_enabled
   vtpm_enabled               = true
-  encryption_at_host_enabled = false
 
   source_image_id = each.value.image_type == "gallery" && each.value.gallery_image_id != null ? each.value.gallery_image_id : null
 

@@ -99,7 +99,8 @@ locals {
       }
     }
   }
-  flattened_vms = merge(values(local.all_vms)...)
+  flattened_vms                 = merge(values(local.all_vms)...)
+  create_autoscale_dependencies = var.scaling_plan_config != null ? var.scaling_plan_config.assign_autoscale_role : false
 }
 
 data "azuread_group" "assigned_avd_user_group" {
@@ -287,7 +288,7 @@ resource "azurerm_virtual_machine_extension" "session_host_registration" {
 }
 
 resource "azurerm_virtual_desktop_scaling_plan" "scaling_plan" {
-  count = var.scaling_plan_config != null ? 1 : 0
+  count = local.create_autoscale_dependencies ? 1 : 0
 
   name                = var.scaling_plan_config.name
   location            = var.location
@@ -332,12 +333,12 @@ resource "azurerm_virtual_desktop_scaling_plan" "scaling_plan" {
 }
 
 data "azuread_service_principal" "avd_sp" {
-  count        = var.scaling_plan_config != null && var.scaling_plan_config.assign_autoscale_role ? 1 : 0
+  count        = local.create_autoscale_dependencies ? 1 : 0
   display_name = "Azure Virtual Desktop"
 }
 
 resource "azurerm_role_assignment" "avd_autoscale_assignment" {
-  count = var.scaling_plan_config != null && var.scaling_plan_config.assign_autoscale_role ? 1 : 0
+  count = local.create_autoscale_dependencies ? 1 : 0
 
   scope                            = "/subscriptions/${var.subscription_id}/resourceGroups/${var.resource_group_name}"
   role_definition_name             = "Desktop Virtualization Power On Off Contributor"

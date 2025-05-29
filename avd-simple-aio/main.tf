@@ -137,6 +137,34 @@ resource "azurerm_storage_account" "storage" {
     virtual_network_subnet_ids = var.storage_account_config.network_rules_virtual_network_subnet_ids
   }
 
+  dynamic "share_properties" {
+    for_each = var.storage_account_config.share_soft_delete_retention_days != null ? [1] : []
+    content {
+      retention_policy {
+        days = var.storage_account_config.share_soft_delete_retention_days
+      }
+    }
+  }
+
+  dynamic "blob_properties" {
+    for_each = (var.storage_account_config.blob_soft_delete_retention_days != null ||
+                var.storage_account_config.container_delete_retention_days != null) ? [1] : []
+    content {
+      dynamic "delete_retention_policy" {
+        for_each = var.storage_account_config.blob_soft_delete_retention_days != null ? [1] : []
+        content {
+          days = var.storage_account_config.blob_soft_delete_retention_days
+        }
+      }
+      dynamic "container_delete_retention_policy" {
+        for_each = var.storage_account_config.container_delete_retention_days != null ? [1] : []
+        content {
+          days = var.storage_account_config.container_delete_retention_days
+        }
+      }
+    }
+  }
+
   tags = var.tags
 
   lifecycle {

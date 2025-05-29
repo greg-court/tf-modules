@@ -66,6 +66,9 @@ variable "storage_account_config" {
     network_rules_default_action             = optional(string, "Deny")
     public_network_access_enabled            = optional(bool, false)
     default_to_oauth_authentication          = optional(bool, true)
+    blob_soft_delete_retention_days          = optional(number)
+    share_soft_delete_retention_days         = optional(number)
+    container_delete_retention_policy_days   = optional(number)
   })
 }
 

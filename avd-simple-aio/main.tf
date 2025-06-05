@@ -151,6 +151,11 @@ resource "azurerm_storage_account" "storage" {
         versions                        = []
       }
     }
+    lifecycle {
+      ignore_changes = [
+        tags,
+      ]
+    }
   }
 
   dynamic "blob_properties" {

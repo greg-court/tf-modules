@@ -151,11 +151,6 @@ resource "azurerm_storage_account" "storage" {
         versions                        = []
       }
     }
-    lifecycle {
-      ignore_changes = [
-        tags,
-      ]
-    }
   }
 
   dynamic "blob_properties" {
@@ -181,7 +176,8 @@ resource "azurerm_storage_account" "storage" {
 
   lifecycle {
     ignore_changes = [
-      azure_files_authentication
+      azure_files_authentication,
+      tags
     ]
   }
 }

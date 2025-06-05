@@ -317,7 +317,8 @@ resource "azurerm_windows_virtual_machine" "session_hosts" {
     ignore_changes = [
       admin_password,
       patch_assessment_mode,
-      tags
+      boot_diagnostics,
+      tags,
     ]
   }
 }

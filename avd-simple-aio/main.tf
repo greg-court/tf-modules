@@ -104,16 +104,11 @@ locals {
   create_autoscale_dependencies = var.scaling_plan_config != null ? var.scaling_plan_config.assign_autoscale_role : false
 }
 
-data "azuread_group" "assigned_avd_user_group" {
-  for_each     = local.app_group_assignments_for_each
-  display_name = each.value.group_name_to_assign
-}
-
 resource "azurerm_role_assignment" "app_group_user_assignments" {
   for_each             = local.app_group_assignments_for_each
   scope                = azurerm_virtual_desktop_application_group.app_groups[each.value.app_group_resource_key].id
   role_definition_name = "Desktop Virtualization User"
-  principal_id         = data.azuread_group.assigned_avd_user_group[each.key].object_id
+  principal_id         = each.value.group_assignments_ids
 
   depends_on = [
     azurerm_virtual_desktop_application_group.app_groups

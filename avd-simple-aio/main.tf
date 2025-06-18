@@ -204,11 +204,6 @@ locals {
   }
 }
 
-data "azuread_group" "custom_assignment_ad_groups" {
-  for_each     = local.unique_custom_assignment_group_names
-  display_name = each.key
-}
-
 resource "azurerm_role_assignment" "file_share_custom_assignments" {
   for_each = { for assignment in local.file_share_custom_role_assignments_flat : assignment.assignment_key => assignment }
 

@@ -55,10 +55,10 @@ resource "azurerm_virtual_desktop_workspace_application_group_association" "asso
 locals {
   app_group_role_assignments_flat = flatten([
     for ag_config in var.application_groups_config : [
-      for group_name_str in ag_config.group_assignments : {
-        assignment_key         = "${ag_config.name}_${replace(group_name_str, "/[^a-zA-Z0-9-_]/", "_")}"
+      for principal_id_str in ag_config.principal_id_assignments : {
+        assignment_key         = "${ag_config.name}_${principal_id_str}"
         app_group_resource_key = ag_config.name
-        group_name_to_assign   = group_name_str
+        principal_id_to_assign = principal_id_str
       }
     ]
   ])
@@ -108,7 +108,7 @@ resource "azurerm_role_assignment" "app_group_user_assignments" {
   for_each             = local.app_group_assignments_for_each
   scope                = azurerm_virtual_desktop_application_group.app_groups[each.value.app_group_resource_key].id
   role_definition_name = "Desktop Virtualization User"
-  principal_id         = each.value.group_assignments_ids
+  principal_id         = each.value.group_assignment_ids
 
   depends_on = [
     azurerm_virtual_desktop_application_group.app_groups

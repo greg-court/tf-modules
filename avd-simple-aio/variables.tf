@@ -49,7 +49,7 @@ variable "application_groups_config" {
     friendly_name                = string
     description                  = optional(string)
     default_desktop_display_name = optional(string)
-    group_assignments_ids        = optional(list(string), [])
+    group_assignment_ids         = optional(list(string), [])
   }))
 }
 
